@@ -6,7 +6,7 @@
   <link href="http://blog.tibrella.space/atom.xml" rel="self"/>
   
   <link href="http://blog.tibrella.space/"/>
-  <updated>2024-03-13T02:32:05.640Z</updated>
+  <updated>2024-10-07T07:27:54.153Z</updated>
   <id>http://blog.tibrella.space/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用 systemd-networkd + iwd 代替 Network Manager</title>
+    <link href="http://blog.tibrella.space/post/replace-nm-with-systemd-networkd/"/>
+    <id>http://blog.tibrella.space/post/replace-nm-with-systemd-networkd/</id>
+    <published>2024-08-28T06:16:58.000Z</published>
+    <updated>2024-10-07T07:27:54.153Z</updated>
+    
+    <content type="html"><![CDATA[<p><ahref="https://wiki.archlinuxcn.org/wiki/Systemd-networkd">参考文档</a></p><p>这两天用 Network Manager总感觉反应很慢，有的时候扫不到网络，有的时候一个网络需要很长时间才能连接上，于是考虑换一套网络管理工具。<br />于是选择了 Systemd 内置的systemd-networkd。但是还得配上一个服务用来管理无线适配器，我选择了比较熟悉的iwd 和一个长得挺好看的 TUI 配置界面 <ahref="https://github.com/pythops/impala">impala</a>。</p><h2 id="安装软件包">安装软件包</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S iwd impala</span><br></pre></td></tr></table></figure><p>为了防止没网找不到配置的文档，我们先不要停用/卸载 NetworkManager，等待万事俱备再切换。</p><h2 id="配置-systemd-networkd">配置 systemd-networkd</h2><p>编辑<code>/etc/systemd/network/25-wireless.network</code>，写入：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[Match]</span><br><span class="line">Name=wl*</span><br><span class="line"></span><br><span class="line">[Network]</span><br><span class="line">DHCP=yes</span><br><span class="line">IgnoreCarrierLoss=3s</span><br></pre></td></tr></table></figure><p>无线适配器的名字应该形如<code>wlp2s0</code>，这里支持通配符，所以写的 <code>wl*</code></p><p>在使用指定 DNS 的时候需要配置 systemd-resolved，它默认的备用 DNS 是Cloudflare 家的，以防万一我们需要给他改成国内其他公共DNS。这里我改的是阿里。</p><p>把 <code>/etc/systemd/resolve.conf</code> 中 <code>[Resolve]</code>字段下的 <code>FallbackDNS</code> 改成自己想改的 DNS。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FallbackDNS=223.5.5.5</span><br></pre></td></tr></table></figure><h2 id="启用服务">启用服务</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable NetworkManager --now</span><br><span class="line">systemctl enable systemd-networkd systemd-resolved iwd --now</span><br></pre></td></tr></table></figure><p>然后使用 impala 联网就好了。执行 <code>impala</code> 命令，Tab切换到选择网络的地方，按上下键选择网络，按空格输入密码即可。（如果你有DE 的话应该可以直接从 DE 的设置进行网络连接）</p><p>如果还有问题，进行撤销：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemdctl disable systemd-networkd systemd-resolved iwd --now</span><br><span class="line">systemctl enable NetworkManager --now</span><br></pre></td></tr></table></figure><p>找文档自己想办法去吧。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;&lt;a
+href=&quot;https://wiki.archlinuxcn.org/wiki/Systemd-networkd&quot;&gt;参考文档&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;这两天用 Network Manager
+总感觉反应很慢，有的时候扫不到网络，有的时候一个网络需要很长时间才能连接上，于</summary>
+      
+    
+    
+    
+    <category term="Linux" scheme="http://blog.tibrella.space/categories/Linux/"/>
+    
+    
+    <category term="网络" scheme="http://blog.tibrella.space/tags/%E7%BD%91%E7%BB%9C/"/>
+    
+  </entry>
   
   <entry>
     <title>KDE XWayland 体验指南</title>
@@ -488,27 +515,6 @@ Moolenaar passed away on 3 August 2023.
     
     
     <category term="内核" scheme="http://blog.tibrella.space/tags/%E5%86%85%E6%A0%B8/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>AC 自动机</title>
-    <link href="http://blog.tibrella.space/post/ac-automaton/"/>
-    <id>http://blog.tibrella.space/post/ac-automaton/</id>
-    <published>2023-06-06T19:43:04.000Z</published>
-    <updated>2023-08-19T02:55:30.575Z</updated>
-    
-    <content type="html"><![CDATA[<p>真的比 KMP 简单！（指好理解）</p><h2 id="前置知识">前置知识</h2><p>trie 树（必会）<br />KMP（知道一点思想就行，不用详细学习）</p><h2 id="用途">用途</h2><p>我们知道 KMP 能够 <spanclass="math inline">\(\operatorname{O}(|T|+|S|)\)</span> 匹配单个文本串<span class="math inline">\(T\)</span> 与模式串 <spanclass="math inline">\(S\)</span>。但是如果有 <spanclass="math inline">\(n \leq 10^5\)</span>个模式串（小串）匹配一个文本串（大串）呢？AC 自动机能够在 <spanclass="math inline">\(\operatorname{O}(|T|+\sum |S|)\)</span>的复杂度内求出每一个模式串的出现次数。</p><p>核心思想和 KMP相似，除去多余的匹配，即在当前匹配状态的基础上转移着匹配。（我也不知道我说了啥）</p><h2 id="基本结构">基本结构</h2><p>多个模式串，先去重前缀，建立前缀树（即 trie 树）。假设我们当前有四个模式串：<spanclass="math inline">\(\texttt{abc,ac,bc,bd}\)</span></p><div class="tag-plugin image"><div class="image-bg"><img src="https://pic.imgdb.cn/item/64813e2a1ddac507cc19c8df"/></div></div><p>对每个模式串终止字符记录其出现的次数作为其在 trie树上对应节点的权值，然后遍历文本串的每一个字符，在 trie树上向下走，<span class="math inline">\(ans\)</span>加上当前点的权值，如果走不了了就把文本串的当前指针回跳到上一个有多个子节点的节点，从trie树根节点继续匹配。（当然这个不重要，理解不理解无所谓）（理解不了就自己匹配一下试试）</p><p>合并了一些模式串的前缀，于是有了一定优化，但是优化还不够，考虑对后缀优化。</p><h2 id="fail-边">fail 边</h2><h3 id="含义">含义</h3><p>AC 自动机的核心就是 fail 边。</p><p>fail 边的含义：如果 <span class="math inline">\(u\)</span> 点的 fail边指向 <span class="math inline">\(v\)</span>，则 <spanclass="math inline">\(v\)</span> 点所代表的字符串<a href="#fn1"class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>是<span class="math inline">\(u\)</span>点所代表的字符串的后缀，且前者是除后者自身以外满足要求的最长字符串。</p><p>先不管怎样建 fail 边，按照要求人脑建立一下，如下图：</p><div class="tag-plugin image"><div class="image-bg"><img src="https://pic.imgdb.cn/item/648140721ddac507cc1d77e5"/></div></div><p>然后假设有文本串 <spanclass="math inline">\(\texttt{abc}\)</span>，进行匹配。</p><p>为什么上一次匹配的时候，我们需要把文本串的指针回跳？因为没有办法除去后缀的影响——一个模式串是另一个模式串的后缀，或前者的一部分是后者的后缀。意味着：后者匹配失败不代表前者也会匹配失败。于是我们可以记录一下合法后缀，如果匹配失败就跳到自己最长后缀所在节点上（没有的话就跳根节点），容易发现这样一直跳下去，能把最开始的串的合法后缀全部跳完！说明后缀的影响已经排除掉了。</p><p>为了方便，我们把没有合法后缀的节点的 fail 边指向根节点。</p><div class="tag-plugin image"><div class="image-bg"><img src="https://pic.imgdb.cn/item/6481466b1ddac507cc291a6d"/></div></div><p>实际上此时的 fail边的含义：无法向下一个子节点匹配（没有子节点或匹配失败）时要走的边。</p><p>动画演示：</p><div class="tag-plugin image"><div class="image-bg"><img src="https://pic.imgdb.cn/item/64814ec31ddac507cc38599e"/></div></div><h3 id="建立">建立</h3><p>BFS 的过程。</p><ol type="1"><li><p>第一层（根节点为第零层）的 fail 全部指向根节点<a href="#fn2"class="footnote-ref" id="fnref2"role="doc-noteref"><sup>2</sup></a>，压入队列。</p></li><li><p>取出队头，遍历子节点，如果子节点存在，假设这个子节点代表字符<span class="math inline">\(c\)</span>，当前节点 fail 指针指向 <spanclass="math inline">\(lf\)</span>，<spanclass="math inline">\(lf\)</span> 的子节点集合为 <spanclass="math inline">\(son\)</span>，则将其 fail 指针指向 <spanclass="math inline">\(son_c\)</span>。</p></li></ol><p>没了。</p><h2 id="优化">优化</h2><p>我们一般把 trie 树的一个节点的儿子用长度为 26的数组存下，导致遍历子节点的时候会遍历到傻逼空节点。</p><p>对于当前节点的空子节点指针，可以直接指向当前 fail指针指向的节点的子节点集合中，对应的子节点。</p><p>参考代码：</p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::queue&lt;i32&gt; q;</span><br><span class="line">    <span class="keyword">for</span> (i32 i = <span class="number">0</span>; i &lt; <span class="number">26</span>; ++i)</span><br><span class="line">        <span class="keyword">if</span> (trie[<span class="number">0</span>].son[i]) q.<span class="built_in">push</span>(trie[<span class="number">0</span>].son[i]);</span><br><span class="line">    <span class="keyword">while</span> (!q.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">        i32 nod = q.<span class="built_in">front</span>(), lfail = trie[q.<span class="built_in">front</span>()].fail; <span class="comment">// 当前节点和当前节点的 fail 节点</span></span><br><span class="line">        q.<span class="built_in">pop</span>();</span><br><span class="line">        <span class="keyword">for</span> (i32 i = <span class="number">0</span>; i &lt; <span class="number">26</span>; ++i) &#123;</span><br><span class="line">            i32&amp; to = trie[nod].son[i];</span><br><span class="line">            <span class="keyword">if</span> (to) &#123;</span><br><span class="line">                trie[to].fail = trie[lfail].son[i];</span><br><span class="line">                q.<span class="built_in">push</span>(to);</span><br><span class="line">            &#125; <span class="keyword">else</span></span><br><span class="line">                to = trie[lfail].son[i]; <span class="comment">// 节点为空</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><section id="footnotes" class="footnotes footnotes-end-of-document"role="doc-endnotes"><hr /><ol><liid="fn1"><p>字典树上除根节点外的每一个节点到根的路径都代表一个字符串。<ahref="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li><li id="fn2"><p>模拟一下会发现：如果 fail还按照正常情况定义来建的话会死循环。<a href="#fnref2"class="footnote-back" role="doc-backlink">↩︎</a></p></li></ol></section>]]></content>
-    
-    
-    <summary type="html">这玩意比 KMP 简单多了。</summary>
-    
-    
-    
-    <category term="字符串" scheme="http://blog.tibrella.space/categories/%E5%AD%97%E7%AC%A6%E4%B8%B2/"/>
-    
-    
-    <category term="AC 自动机" scheme="http://blog.tibrella.space/tags/AC-%E8%87%AA%E5%8A%A8%E6%9C%BA/"/>
     
   </entry>
   
