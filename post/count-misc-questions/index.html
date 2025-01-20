@@ -448,18 +448,24 @@ class="math inline">\(s\)</span> 计数之后直接高位后缀和得到。</p>
       stellar.article = {
         outdate_month: 2
       };
-    </script><script src="/js/main.js" type="text/javascript" async="" data-no-instant="true"></script><script type="text/javascript" src="/js/check_outdated_browser.js" data-no-instant="true"></script><script>
-    function loadMathJax() {    
-          if (typeof MathJax == "undefined")  // 没有载入脚本就先载入脚本
-              stellar.loadScript('https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js', {defer:true});
-          else { // 否则立即渲染
-              MathJax.typesetPromise()
+    </script><script src="/js/main.js" type="text/javascript" async="" data-no-instant="true"></script><script type="text/javascript" src="/js/check_outdated_browser.js" data-no-instant="true"></script><script type="importmap">
+    {
+      "imports": {
+        "#default-font/": "https://unpkg.zhimg.com/mathjax-modern-font@4.0.0-beta.7/mjs/"
       }
-      }
-      InstantClick.on('change', () => {
-          loadMathJax() 
-      });
-      window.addEventListener(
-          "load", loadMathJax, false
-      );
-        </script></div></body></html>
+    }
+    </script><script>
+        function loadMathJax() {    
+            if (typeof MathJax == "undefined")  // 没有载入脚本就先载入脚本
+                stellar.loadScript('https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/mathjax/4.0.0-beta.7/tex-mml-chtml.min.js', {defer:true});
+            else { // 否则立即渲染
+                MathJax.typesetPromise()
+          }
+        }
+        InstantClick.on('change', () => {
+            loadMathJax() 
+        });
+        window.addEventListener(
+            "load", loadMathJax, false
+        );
+    </script></div></body></html>
